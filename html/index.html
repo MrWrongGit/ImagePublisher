@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WS JPEG Stream Monitor</title>
+    <style>
+        html, body {
+            margin: 0px;
+            padding: 0px;
+            height: 100%;
+            width: 100%;
+        }
+
+        #img-show {
+            background-color: black;
+        }
+    </style>
+    <script>
+        var ws = new WebSocket('ws://127.0.0.1:8050/ws');
+
+        ws.onopen = function() {
+            console.log("open")
+        }
+        
+        ws.onmessage = function(e) {
+            var show = document.getElementById('img-show');
+            show.src = URL.createObjectURL(e.data);
+        }
+    </script>
+</head>
+<body>
+    <img id="img-show" height="100%" width="100%"/>
+</body>
+</html>
