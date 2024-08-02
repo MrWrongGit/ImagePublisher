@@ -11,6 +11,10 @@
 - tornado: 用于创建http及websocket服务；
 - opencv-contrib-python: 用于图像数据源获取及图像处理。
 
+```shell
+pip install tornado opencv-contrib-python
+```
+
 ### 使用
 
 1. 进入到src目录，启动web服务：

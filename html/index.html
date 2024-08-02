@@ -10,24 +10,39 @@
             width: 100%;
         }
 
-        #img-show {
+        .img {
             background-color: black;
+            border: 1px solid white;
+            width: 640px;
+            height: 360px;
         }
     </style>
     <script>
         var ws = new WebSocket('ws://127.0.0.1:8050/ws');
+        var channel = '0';
 
         ws.onopen = function() {
             console.log("open")
         }
         
         ws.onmessage = function(e) {
-            var show = document.getElementById('img-show');
-            show.src = URL.createObjectURL(e.data);
+            if(typeof(e.data) === 'string') {
+                jdata = JSON.parse(e.data);
+                // switch channel for incoming image
+                if(jdata.type === 'image')
+                    channel = jdata.channel;
+            } else {
+                const img_el = document.getElementById('img-'+channel);
+                img_el.src = URL.createObjectURL(e.data);
+            }
         }
     </script>
 </head>
 <body>
-    <img id="img-show" height="100%" width="100%"/>
+    <img id="img-0" class="img"/>
+    <img id="img-1" class="img"/>
+    <img id="img-2" class="img"/>
+    <img id="img-3" class="img"/>
+    <img id="img-4" class="img"/>
 </body>
 </html>

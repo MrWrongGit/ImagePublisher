@@ -6,7 +6,6 @@ import tornado.httpserver
 import tornado.options
 
 from tornado.web import RequestHandler
-from tornado.options import define, options
 from tornado.websocket import WebSocketHandler
 
 from tornado import httpclient
@@ -17,16 +16,24 @@ class IndexHandler(RequestHandler):
         self.render('../html/index.html')
 
 class ImageUpdateHandler(RequestHandler):
-    def post(self):
+    def post(self, ch):
         if self.application.busy_push:
             return
         if self.application.online_clients == set(): # zero length
             return
         # send images to websocket clients
-        self.application.busy_push = True;
+        self.application.busy_push = True
         for client in self.application.online_clients:
+            # send command first
+            client.write_message({
+                "type": "image",
+                "width": 640,
+                "height": 360,
+                "channel": ch
+            })
+            # image followed
             client.write_message(self.request.body, binary=True)
-        self.application.busy_push = False;
+        self.application.busy_push = False
 
 # websocket handlers
 class WebsocketHandler(WebSocketHandler):
@@ -49,7 +56,7 @@ class MyApplication(tornado.web.Application):
 
         tornado.web.Application.__init__(self, [
             (r'/', IndexHandler),
-            (r'/image', ImageUpdateHandler),
+            (r'/image/(.*)', ImageUpdateHandler),
             (r'/ws', WebsocketHandler),
         ])
 
@@ -68,6 +75,6 @@ if __name__ == "__main__":
     server.run()
 
 # api for client
-def imageUpdateHelper(image):
-    http_request = httpclient.HTTPRequest("http://127.0.0.1:8050/image", method="POST", body=image.tobytes())
+def imageUpdateHelper(image, ch=0):
+    http_request = httpclient.HTTPRequest("http://127.0.0.1:8050/image/{}".format(ch), method="POST", body=image.tobytes())
     httpclient.HTTPClient().fetch(http_request)
